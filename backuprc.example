@@ -1,0 +1,4 @@
+BACKUP_HOSTS="remote1 remote2"
+RESTORE_HOST=remote1
+REMOTE_PATH=my-backup
+FILES="$HOME/bin/backup $HOME/bin/restore $HOME/.config/backup/backuprc .bash_profile .gitconfig .vimrc Documents"

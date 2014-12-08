@@ -1,0 +1,52 @@
+#!/bin/bash
+
+. $HOME/.config/backup/backuprc || exit 1
+
+# Find files with pathname components.  These are treated specially because on
+# the backup server, they are stored flat with no path.  When rsync'ing from
+# the server, we `ln` our local files into the pwd so that rsync's verbose list
+# of files updated correctly displays if our local file will be overwritten.
+# rsync will replace the file in our pwd, though, and will not cause our local
+# file in its original path to be updated.  We do a subsequent rsync call to
+# move our pwd file to its proper path.  Finally, we remove the pwd file.  This
+# process may cause collisions if the pwd already has files with certain names.
+# Therefore, we check for this.
+for file in $FILES; do
+	dir=$(dirname "$file")
+	if [ "$dir" != "." ]; then
+		DIRNAMES="$DIRNAMES $file"
+	fi
+done
+
+# Check if files will be clobbered.
+ASKED=n
+for file in $DIRNAMES; do
+	base=$(basename "$file")
+	if [ -e "$base" -a $ASKED = n ]; then
+		ASKED=y
+		echo "Some files may be overwritten unintentionally." >&2
+		read -p "Continue? [y/N] " yn >&2
+		if [ "$yn" != "y" -a "$yn" != "Y" ]; then
+			exit
+		fi
+	fi
+	if [ -e "$base" ]; then
+		rm -- "$base"
+	fi
+done
+
+# Setup the pwd so that rsync gives a correct file list.
+for file in $DIRNAMES; do
+	base=$(basename "$file")
+	ln "$file" "$base"
+done
+
+# Transfer.
+rsync -av $RESTORE_HOST:$REMOTE_PATH/ .
+
+# Compensate for how rsync doesn't do file paths. And cleanup.
+for file in $DIRNAMES; do
+	base=$(basename "$file")
+	rsync -a -- "$base" "$file"
+	rm -- "$base"
+done

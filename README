@@ -1,0 +1,16 @@
+Simple backup system with `backup` and `restore` commands.
+
+Configure the destinations and the files to be backed up in
+$HOME/.config/backup/backuprc.
+
+Share backuprc's with several devices and you can `backup` and `restore`
+to establish a primitive file synching between them.
+
+
+Caveats:
+
+- The file names listed in backuprc CANNOT have spaces in them.  Files
+  in subdirectores CAN have spaces.
+
+- Only one backup exists at a time and the act of backing up deletes
+  files on the remote host that don't exist on the local host.
