@@ -1,5 +1,9 @@
 #!/bin/bash
 
+#RESTORE_HOST=pdm.me
+#REMOTE_PATH=$HOSTNAME
+#FILES=".bashrc .vimrc"
+
 . $HOME/.config/backup/backuprc || exit 1
 
 # Find files with pathname components.  These are treated specially because on
@@ -46,7 +50,19 @@ rsync -av $RESTORE_HOST:$REMOTE_PATH/ .
 
 # Compensate for how rsync doesn't do file paths. And cleanup.
 for file in $DIRNAMES; do
+	dir=$(dirname "$file")
 	base=$(basename "$file")
-	rsync -a -- "$base" "$file"
+
+	if [ -w "$dir" ]; then
+		rsync -a -- "$base" "$file"
+	else
+		#  rsync fails if we don't have write permission on parent
+		#  directory, even if we have write access to the particular
+		#  file.  Use cp to set the file contents without requiring
+		#  directory write permission.
+		cp -a -r -- "$base" "$file"
+	fi
+
+	# Cleanup.
 	rm -- "$base"
 done
