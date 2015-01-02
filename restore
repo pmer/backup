@@ -60,7 +60,7 @@ for file in $DIRNAMES; do
 		#  directory, even if we have write access to the particular
 		#  file.  Use cp to set the file contents without requiring
 		#  directory write permission.
-		cp -a -r -- "$base" "$file"
+		cp -a -- "$base" "$file"
 	fi
 
 	# Cleanup.
