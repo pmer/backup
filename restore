@@ -41,8 +41,10 @@ done
 
 # Setup the pwd so that rsync gives a correct file list.
 for file in $DIRNAMES; do
-	base=$(basename "$file")
-	ln "$file" "$base"
+	if [ -f "$file" ]; then
+		base=$(basename "$file")
+		ln "$file" "$base"
+	fi
 done
 
 # Transfer.
